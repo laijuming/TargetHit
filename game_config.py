@@ -1,4 +1,8 @@
 class GameConfig:
+    """
+    Client -
+    Take user input configuration parameters
+    """
     def __init__(self, game_map, game_name, board_size, init_speed, game_mode):
         self._game_map = game_map
         self._game_name = game_name
