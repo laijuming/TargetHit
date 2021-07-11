@@ -1,6 +1,7 @@
 from game_const import GAME_BEGIN, GAME_END
 
-class GameStageSnapshot:
+
+class GameStateSnapshot:
     def __init__(self, player_states, target, game_status, game_end_msg):
         self.player_states = player_states,
         self.target = target
@@ -8,7 +9,9 @@ class GameStageSnapshot:
         self.game_end_msg = game_end_msg
 
     def get_players_state(self):
-        return self.player_states
+        for each in self.player_states[0]:
+            yield each
+
     def get_target_state(self):
         return self.target
 
@@ -40,6 +43,7 @@ class GameState:
         return self.current_target
 
     def player_change_direction(self, id, direction):
+        print("player",id,"change direction",direction)
         if id in self.players:
             self.players[id].change_head_direction(direction)
 
@@ -50,7 +54,7 @@ class GameState:
     def remove_target(self):
         self.current_target = None
 
-    def player_die(self,player_id):
+    def player_die(self, player_id):
         self.players_life[player_id] -= 1
 
     def check_game_status(self):
@@ -71,7 +75,3 @@ class GameState:
             self.game_end_msg = "Winner is" + self.players[winner].name
             self.game_status = GAME_END
             return False
-
-
-
-

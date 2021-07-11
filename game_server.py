@@ -5,9 +5,9 @@ import traceback
 from ws4py.async_websocket import WebSocket
 from ws4py.server.tulipserver import WebSocketProtocol
 
-from game_const import MSG_HOST, MSG_JOIN, MSG_GAME_HOST_ACK, MSG_PLAYER_READY
+from game_const import MSG_HOST, MSG_JOIN, MSG_PLAYER_READY, GAME_RUNNING, MSG_DIRECTION_UPDATE, GAME_END
 from game_manager import GameManager
-from game_message import GameHostMsg, GameJoinMsg, GameHostAckMsg, GamePlayerReadyMsg
+from game_message import GameHostMsg, GameJoinMsg, GameHostAckMsg, GamePlayerReadyMsg, DirectionUpdateMsg
 from player import Player
 
 loop = asyncio.get_event_loop()
@@ -22,21 +22,25 @@ class RemotePlayer(Player):
                          _player.init_x, _player.init_y)
         self.ws = _ws
 
+@asyncio.coroutine
+#preiodicly send game state update message to clients async
+def server_update():
+    while True:
+        yield from asyncio.sleep(0.01)
+        for id, session in game_manager._game_session.items():
+            #if session._game_state.game_status == GAME_RUNNING or session._game_state.game_status == GAME_END:
+            while session._session_async_queue:
+                conn, msg = session._session_async_queue.pop()
+                conn.send(msg)
 
 class GameSocket(WebSocket):
     def received_message(self, msg):
         try:
-            # print(message)
-            print("enter server")
-            print(msg)
             decoded_msg = json.loads(str(msg))
             msg_type = decoded_msg["msg_type"]
-            #print(msg_type)
             if msg_type == MSG_HOST:
-                print("enter host")
                 game_config, host = GameHostMsg.deserialize(decoded_msg["payload"])
                 session_id = game_manager.create_game_session(game_config, RemotePlayer(host,self))
-                print("game hosted session_id, player_name", session_id, host.name)
                 self.send(GameHostAckMsg.serialize(session_id))
 
             elif msg_type == MSG_JOIN:
@@ -45,9 +49,14 @@ class GameSocket(WebSocket):
 
             elif msg_type == MSG_PLAYER_READY:
                 session_id, player_id = GamePlayerReadyMsg.deserialize(decoded_msg["payload"])
-                print("PLAYER READY session id", session_id)
                 game_session = game_manager.get_game_session(session_id)
                 game_session.player_ready(player_id)
+
+            elif msg_type == MSG_DIRECTION_UPDATE:
+                session_id, player_id, direction = DirectionUpdateMsg.deserialize(decoded_msg["payload"])
+                game_session = game_manager.get_game_session(session_id)
+                game_session.on_player_move(player_id, direction)
+
 
         except Exception as exp:
             print(str(exp))
@@ -61,4 +70,5 @@ def start_server():
 
 if __name__ == '__main__':
     server = loop.run_until_complete(start_server())
+    asyncio.async(server_update())
     loop.run_forever()

@@ -17,6 +17,8 @@ class GameSession:
         self._player_status = {}
         self._game_runner = Thread(name='game_runner', target=self.run_game)
         self._game_runner.daemon = True
+        self._session_async_queue = []
+
 
     @property
     def session_status(self):
@@ -37,10 +39,6 @@ class GameSession:
 
     def run_game(self):
 
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-
         while self._game_state.check_game_status():
             self._game_master.game_update()
             self._game_master.random_event()
@@ -48,11 +46,15 @@ class GameSession:
             game_state_update = GameStatesUpdateMsg.serialize(self._game_state)
 
             for _, player in self._game_state.players.items():
-                print("run_game",game_state_update)
-                loop.run_until_complete(player.ws.send(game_state_update))
+                self._session_async_queue.append((player.ws, game_state_update))
 
-            time.sleep(0.1)
+            time.sleep(0.15)
 
+        #last update after die
+        game_state_update = GameStatesUpdateMsg.serialize(self._game_state)
+        print("last update msg",game_state_update)
+        for _, player in self._game_state.players.items():
+            self._session_async_queue.append((player.ws, game_state_update))
 
     def game_end(self):
         pass
@@ -60,8 +62,9 @@ class GameSession:
     def game_init(self):
         pass
 
-    def on_player_move(self, play_move_msg):
-        pass
+    def on_player_move(self, player_id, direction):
+        if self._game_state.game_status == GAME_RUNNING:
+            self._game_state.player_change_direction(player_id, direction)
 
     def on_game_update(self):
         pass

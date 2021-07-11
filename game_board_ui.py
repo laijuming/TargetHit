@@ -86,10 +86,10 @@ class GameBoardUI:
             for bt, direct, color, x, y,_ in game_state.get_players_state():
                 # pos = image.get_rect().move(x, y)
                 # print("BoardUI x, y",x,y)
-                self._window.blit(self.player_image[(bt, direct, color)], (x, y))
+                self._window.blit(self.player_image[(int(bt), int(direct), int(color))], (int(x), int(y)))
             target = game_state.get_target_state()
             if target:
-                self._window.blit(self.target_image[target[0]], (target[1], target[2]))
+                self._window.blit(self.target_image[int(target[0])], (int(target[1]), int(target[2])))
             if game_state.game_status == GAME_END:
                 pass
                 #self._window.blit(self.game_end_surface,(100,100))

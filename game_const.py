@@ -45,6 +45,7 @@ MSG_GAME_HOST_ACK = 5
 MSG_GAME_JOIN_ACK = 6 #payload is session_id
 MSG_PLAYER_READY = 8
 MSG_MATCH_NOT_FOUND = 9
+MSG_DIRECTION_UPDATE = 10
 
 
 #session status

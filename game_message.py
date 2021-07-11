@@ -1,8 +1,8 @@
 import json
-
 from game_config import GameConfig
-from game_const import MSG_HOST, MSG_JOIN, MSG_GAME_HOST_ACK, MSG_GAME_JOIN_ACK, MSG_PLAYER_READY, MSG_GAME_UPDATE
-from game_state import GameStageSnapshot
+from game_const import MSG_HOST, MSG_JOIN, MSG_GAME_HOST_ACK, MSG_GAME_JOIN_ACK, MSG_PLAYER_READY, MSG_GAME_UPDATE, \
+    MSG_DIRECTION_UPDATE
+from game_state import GameStateSnapshot
 from player import Player
 
 """
@@ -73,6 +73,9 @@ class GameJoinMsg:
 
 
 class GamePlayerReadyMsg:
+    """
+    Message sent from both client to server when player is ready ( client initialization done)
+    """
     @staticmethod
     def serialize(_session_id, _player_id):
         msg = {"msg_type": MSG_PLAYER_READY,
@@ -89,6 +92,9 @@ class GamePlayerReadyMsg:
 
 
 class GameHostAckMsg:
+    """
+    Message sent from server to game host client to acknowledge its message
+    """
     @staticmethod
     def serialize(_session_id):
         msg = {"msg_type": MSG_GAME_HOST_ACK,
@@ -103,6 +109,9 @@ class GameHostAckMsg:
 
 
 class GameJoinAckMsg:
+    """
+    Message sent from server to game join client to acknowledge its message
+    """
     @staticmethod
     def serialize(_session_id, _game_config):
         msg = {"msg_type": MSG_GAME_JOIN_ACK,
@@ -127,6 +136,9 @@ class GameJoinAckMsg:
 
 
 class GameStatesUpdateMsg:
+    """
+    Message sent from server to both client
+    """
     @staticmethod
     def serialize(_game_state):
         player_state = ["%d %d %d %d %d %s" % (bt, direct, color, x, y, id) for bt, direct, color, x, y, id in
@@ -147,7 +159,23 @@ class GameStatesUpdateMsg:
     def deserialize(decoded_payload):
         decoded_player_state = [tuple(each.split(' ')) for each in decoded_payload['player_state']]
         target = tuple(decoded_payload['target_state'].split(' ')) if decoded_payload['target_state'] else None
-        return GameStageSnapshot(decoded_player_state,
+        return GameStateSnapshot(decoded_player_state,
                                  target,
                                  decoded_payload['game_status'],
                                  decoded_payload['game_end_msg'])
+
+
+class DirectionUpdateMsg:
+    @staticmethod
+    def serialize(_session_id,_player_id, _direction):
+        msg = {"msg_type": MSG_DIRECTION_UPDATE,
+               "payload": {"session_id": _session_id,
+                           "player_id": _player_id,
+                           "direction": _direction
+                           }
+               }
+        return json.dumps(msg)
+
+    @staticmethod
+    def deserialize(decoded_payload):
+        return decoded_payload['session_id'], decoded_payload['player_id'], int(decoded_payload['direction'])
