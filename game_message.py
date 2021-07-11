@@ -1,11 +1,20 @@
 import json
 
 from game_config import GameConfig
-from game_const import MSG_HOST, MSG_JOIN, MSG_GAME_HOST_ACK, MSG_GAME_JOIN_ACK, MSG_PLAYER_READY
+from game_const import MSG_HOST, MSG_JOIN, MSG_GAME_HOST_ACK, MSG_GAME_JOIN_ACK, MSG_PLAYER_READY, MSG_GAME_UPDATE
+from game_state import GameStageSnapshot
 from player import Player
+
+"""
+This file contains all messages between server and client
+"""
 
 
 class GameHostMsg:
+    """
+    Message sent from game host client to server
+    """
+
     @staticmethod
     def serialize(_game_config, _host):
         msg = {"msg_type": MSG_HOST,
@@ -36,6 +45,10 @@ class GameHostMsg:
 
 
 class GameJoinMsg:
+    """
+    Message sent from game join client to server
+    """
+
     @staticmethod
     def serialize(_player):
         msg = {"msg_type": MSG_JOIN,
@@ -67,7 +80,7 @@ class GamePlayerReadyMsg:
                            "player_id": _player_id
                            }
                }
-        print("GamePlayerReadyMsg",str(msg))
+        print("GamePlayerReadyMsg", str(msg))
         return json.dumps(msg)
 
     @staticmethod
@@ -111,3 +124,30 @@ class GameJoinAckMsg:
                           decoded_payload["board_size"],
                           decoded_payload["init_speed"],
                           decoded_payload["game_mode"])
+
+
+class GameStatesUpdateMsg:
+    @staticmethod
+    def serialize(_game_state):
+        player_state = ["%d %d %d %d %d %s" % (bt, direct, color, x, y, id) for bt, direct, color, x, y, id in
+                        _game_state.get_players_state()]
+        target = _game_state.get_target_state()
+        target_state = "%d %d %d" % (target[0], target[1], target[2]) if target else None
+
+        msg = {"msg_type": MSG_GAME_UPDATE,
+               "payload": {"player_state": player_state,
+                           "game_status": _game_state.game_status,
+                           "game_end_msg": _game_state.game_end_msg,
+                           "target_state": target_state
+                           }
+               }
+        return json.dumps(msg)
+
+    @staticmethod
+    def deserialize(decoded_payload):
+        decoded_player_state = [tuple(each.split(' ')) for each in decoded_payload['player_state']]
+        target = tuple(decoded_payload['target_state'].split(' ')) if decoded_payload['target_state'] else None
+        return GameStageSnapshot(decoded_player_state,
+                                 target,
+                                 decoded_payload['game_status'],
+                                 decoded_payload['game_end_msg'])

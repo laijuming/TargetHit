@@ -6,7 +6,6 @@ from game_const import PLAYER_HEAD, PINK, PLAYER_BODY, DIRECT_DOWN, RED, DIRECT_
 
 class GameBoardUI:
     def __init__(self, _game_config):
-        print("gameboardUI")
         self._map = pg.image.load(_game_config._game_map)
         self._window = pg.display.set_mode(self._map.get_size())
         pg.display.set_caption(_game_config._game_name)
@@ -82,7 +81,6 @@ class GameBoardUI:
                     }
 
     def on_draw(self, game_state):
-        print("on_draw")
         self._window.blit(self._map, (0, 0))
         if game_state is not None:
             for bt, direct, color, x, y,_ in game_state.get_players_state():

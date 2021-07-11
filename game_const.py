@@ -46,6 +46,7 @@ MSG_GAME_JOIN_ACK = 6 #payload is session_id
 MSG_PLAYER_READY = 8
 MSG_MATCH_NOT_FOUND = 9
 
+
 #session status
 SESSION_CREATED = 0
 SESSION_MATCHED = 1
@@ -53,6 +54,8 @@ SESSION_MATCHED = 1
 #game status
 GAME_BEGIN = 1
 GAME_END = 0
+GAME_RUNNING = 2
+
 
 #player status
 PLAYER_JOIN = 0

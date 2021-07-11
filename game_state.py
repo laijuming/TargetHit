@@ -1,5 +1,20 @@
 from game_const import GAME_BEGIN, GAME_END
 
+class GameStageSnapshot:
+    def __init__(self, player_states, target, game_status, game_end_msg):
+        self.player_states = player_states,
+        self.target = target
+        self.game_status = game_status,
+        self.game_end_msg = game_end_msg
+
+    def get_players_state(self):
+        return self.player_states
+    def get_target_state(self):
+        return self.target
+
+    def check_game_status(self):
+        return True if self.game_status != GAME_END else False
+
 
 class GameState:
     def __init__(self):

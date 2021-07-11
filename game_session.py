@@ -1,6 +1,11 @@
-from game_const import PLAYER_JOIN, PLAYER_READY
+import asyncio
+import time
+
+from game_const import PLAYER_JOIN, PLAYER_READY, GAME_RUNNING
 from game_master import GameMaster
+from game_message import GameStatesUpdateMsg
 from game_state import GameState
+from threading import Thread
 
 
 class GameSession:
@@ -10,6 +15,8 @@ class GameSession:
         self._game_master = GameMaster(self._game_state)
         self._session_status = _session_status
         self._player_status = {}
+        self._game_runner = Thread(name='game_runner', target=self.run_game)
+        self._game_runner.daemon = True
 
     @property
     def session_status(self):
@@ -25,7 +32,27 @@ class GameSession:
 
     def game_start(self):
         print("session game start")
-        pass
+        self._game_state.game_status = GAME_RUNNING
+        self._game_runner.start()
+
+    def run_game(self):
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+
+        while self._game_state.check_game_status():
+            self._game_master.game_update()
+            self._game_master.random_event()
+
+            game_state_update = GameStatesUpdateMsg.serialize(self._game_state)
+
+            for _, player in self._game_state.players.items():
+                print("run_game",game_state_update)
+                loop.run_until_complete(player.ws.send(game_state_update))
+
+            time.sleep(0.1)
+
 
     def game_end(self):
         pass
