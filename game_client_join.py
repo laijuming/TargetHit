@@ -5,9 +5,14 @@ import pygame as pg
 from game_board_ui import GameBoardUI
 from game_const import DIRECT_UP, PINK, DIRECT_DOWN, DIRECT_LEFT, DIRECT_RIGHT
 from player import Player
-
 from game_client import GameClient
+"""
+Main client to join a game
 
+Pre configure player 1 as Red, can be changed to user config
+Connect to local server, if connect to remote server, change to public IP
+
+"""
 if __name__ == '__main__':
     pg.init()
     game_client = GameClient("ws://localhost:9007/")

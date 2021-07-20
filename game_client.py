@@ -49,6 +49,5 @@ class GameClient(WebSocketClient):
             self._game_state = game_state_snapshot
 
     def change_direction(self,direction):
-        print("gameclient change_direciton",direction)
         self.send(DirectionUpdateMsg.serialize(self._game_session_id,self._player.id,direction))
 

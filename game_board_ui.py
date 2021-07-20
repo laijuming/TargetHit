@@ -5,12 +5,17 @@ from game_const import PLAYER_HEAD, PINK, PLAYER_BODY, DIRECT_DOWN, RED, DIRECT_
 
 
 class GameBoardUI:
+    """
+    Main UI handler to draw and update
+    """
     def __init__(self, _game_config):
         self._map = pg.image.load(_game_config._game_map)
+        #draw background
         self._window = pg.display.set_mode(self._map.get_size())
         pg.display.set_caption(_game_config._game_name)
         self._map.convert()
-        
+
+        # preload player image
         PINK_HEAD_UP_IMAGE = pg.image.load("./assets/player/player_pink_head_up.png")
         PINK_HEAD_UP_IMAGE.convert()
         PINK_HEAD_DOWN_IMAGE = pg.image.load("./assets/player/player_pink_head_down.png")
@@ -44,6 +49,7 @@ class GameBoardUI:
         RED_BODY_RIGHT_IMAGE = pg.image.load("./assets/player/player_red_body_right.png")
         RED_BODY_RIGHT_IMAGE.convert()
 
+        #final message - comment out due to pygame latency when construncting this font type on macOS
         #display_msg = pg.font.SysFont('Comic Sans MS', 50) #cause slowness
         #self.game_end_surface = display_msg.render("Game end", True, (255, 255, 255))
 
@@ -65,6 +71,7 @@ class GameBoardUI:
                     (PLAYER_BODY, DIRECT_RIGHT, RED): RED_BODY_RIGHT_IMAGE,
                     }
 
+        #load goal images
         GOAL_IMAGE = pg.image.load("./assets/player/goal_goal.png")
         GOAL_IMAGE.convert()
         GROWTH_IMAGE = pg.image.load("./assets/player/goal_growth.png")
@@ -83,15 +90,17 @@ class GameBoardUI:
     def on_draw(self, game_state):
         self._window.blit(self._map, (0, 0))
         if game_state is not None:
+            #draw player
             for bt, direct, color, x, y,_ in game_state.get_players_state():
-                # pos = image.get_rect().move(x, y)
-                # print("BoardUI x, y",x,y)
                 self._window.blit(self.player_image[(int(bt), int(direct), int(color))], (int(x), int(y)))
+
+            #draw goal
             target = game_state.get_target_state()
             if target:
                 self._window.blit(self.target_image[int(target[0])], (int(target[1]), int(target[2])))
+
+            #handle die - todo
             if game_state.game_status == GAME_END:
                 pass
-                #self._window.blit(self.game_end_surface,(100,100))
+
         pg.display.flip()
-        # pg.display.update()

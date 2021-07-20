@@ -1,4 +1,3 @@
-import asyncio
 import time
 
 from game_const import PLAYER_JOIN, PLAYER_READY, GAME_RUNNING
@@ -9,6 +8,9 @@ from threading import Thread
 
 
 class GameSession:
+    """
+    Manage online game session
+    """
     def __init__(self, _game_config, _session_status):
         self._game_config = _game_config
         self._game_state = GameState()
@@ -38,39 +40,28 @@ class GameSession:
         self._game_runner.start()
 
     def run_game(self):
-
+        """
+        Daemon thread to update game status periodically
+        """
         while self._game_state.check_game_status():
             self._game_master.game_update()
             self._game_master.random_event()
 
             game_state_update = GameStatesUpdateMsg.serialize(self._game_state)
-
             for _, player in self._game_state.players.items():
+                #add game state message to async message sending queue
                 self._session_async_queue.append((player.ws, game_state_update))
 
             time.sleep(0.15)
 
         #last update after die
         game_state_update = GameStatesUpdateMsg.serialize(self._game_state)
-        print("last update msg",game_state_update)
         for _, player in self._game_state.players.items():
             self._session_async_queue.append((player.ws, game_state_update))
-
-    def game_end(self):
-        pass
-
-    def game_init(self):
-        pass
 
     def on_player_move(self, player_id, direction):
         if self._game_state.game_status == GAME_RUNNING:
             self._game_state.player_change_direction(player_id, direction)
-
-    def on_game_update(self):
-        pass
-
-    def player_join(self, player, player_pos):
-        pass
 
     def player_ready(self, player_id):
         self._player_status[player_id] = PLAYER_READY
@@ -89,5 +80,3 @@ class GameSession:
             print("game starting")
             self.game_start()
 
-    def get_game_status(self):
-        pass

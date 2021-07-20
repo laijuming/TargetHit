@@ -12,35 +12,45 @@ from player import Player
 
 loop = asyncio.get_event_loop()
 
+# global game manager on server
 game_manager = GameManager()
 
 
 class RemotePlayer(Player):
+    """
+    Inheritance from Player - to attach websocket to client
+    """
+
     def __init__(self, _player, _ws):
         super().__init__(_player.name, _player.id, _player.is_host, _player.color, _player.speed,
                          _player.init_direction,
                          _player.init_x, _player.init_y)
         self.ws = _ws
 
+
 @asyncio.coroutine
-#preiodicly send game state update message to clients async
 def server_update():
+    # periodically send game state update message to clients async
     while True:
         yield from asyncio.sleep(0.01)
         for id, session in game_manager._game_session.items():
-            #if session._game_state.game_status == GAME_RUNNING or session._game_state.game_status == GAME_END:
+            # if session._game_state.game_status == GAME_RUNNING or session._game_state.game_status == GAME_END:
             while session._session_async_queue:
                 conn, msg = session._session_async_queue.pop()
                 conn.send(msg)
 
+
 class GameSocket(WebSocket):
+    """
+    Game server message handler
+    """
     def received_message(self, msg):
         try:
             decoded_msg = json.loads(str(msg))
             msg_type = decoded_msg["msg_type"]
             if msg_type == MSG_HOST:
                 game_config, host = GameHostMsg.deserialize(decoded_msg["payload"])
-                session_id = game_manager.create_game_session(game_config, RemotePlayer(host,self))
+                session_id = game_manager.create_game_session(game_config, RemotePlayer(host, self))
                 self.send(GameHostAckMsg.serialize(session_id))
 
             elif msg_type == MSG_JOIN:
@@ -70,5 +80,6 @@ def start_server():
 
 if __name__ == '__main__':
     server = loop.run_until_complete(start_server())
+    print("server is up")
     asyncio.async(server_update())
     loop.run_forever()

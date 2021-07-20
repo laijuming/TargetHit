@@ -2,6 +2,9 @@ from game_const import GAME_BEGIN, GAME_END
 
 
 class GameStateSnapshot:
+    """
+    Game state snapshot received from server
+    """
     def __init__(self, player_states, target, game_status, game_end_msg):
         self.player_states = player_states,
         self.target = target
@@ -20,6 +23,9 @@ class GameStateSnapshot:
 
 
 class GameState:
+    """
+    Track game states
+    """
     def __init__(self):
         self.players = {}
         self.current_target = None
@@ -43,7 +49,6 @@ class GameState:
         return self.current_target
 
     def player_change_direction(self, id, direction):
-        print("player",id,"change direction",direction)
         if id in self.players:
             self.players[id].change_head_direction(direction)
 

@@ -1,7 +1,12 @@
 class GameConfig:
     """
-    Client -
-    Take user input configuration parameters
+    Take user input configuration parameters:
+    parameters:
+    game_map - background map
+    game_name - player name
+    board_size - this is not used now. size is determined by background map size now
+    init_speed - initial speed of player
+    game_mode - host a game or join a game
     """
     def __init__(self, game_map, game_name, board_size, init_speed, game_mode):
         self._game_map = game_map

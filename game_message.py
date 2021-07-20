@@ -83,7 +83,7 @@ class GamePlayerReadyMsg:
                            "player_id": _player_id
                            }
                }
-        print("GamePlayerReadyMsg", str(msg))
+        #print("GamePlayerReadyMsg", str(msg))
         return json.dumps(msg)
 
     @staticmethod
@@ -166,6 +166,9 @@ class GameStatesUpdateMsg:
 
 
 class DirectionUpdateMsg:
+    """
+    Handles user change direction message
+    """
     @staticmethod
     def serialize(_session_id,_player_id, _direction):
         msg = {"msg_type": MSG_DIRECTION_UPDATE,

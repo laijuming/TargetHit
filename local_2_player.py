@@ -1,7 +1,6 @@
 import sys
 
 import pygame as pg
-from pygame import QUIT, K_SPACE
 
 from game_board_ui import GameBoardUI
 from game_config import GameConfig
@@ -26,15 +25,14 @@ if __name__ == '__main__':
     new_game_state = GameState()
     new_game_state.add_player(player1)
     new_game_state.add_player(player2)
-    for i in range(5):
+    for i in range(3):
         player1.grow()
     for i in range(3):
         player2.grow()
 
     new_game_master = GameMaster(new_game_state)
-    #new_game_board_ui.on_draw(new_game_state)
-    #pg.time.delay(10000)
-    while 1:
+
+    while True:
         new_game_master.random_event()
 
         for event in pg.event.get():
